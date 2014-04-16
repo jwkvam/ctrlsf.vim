@@ -61,6 +61,10 @@ endif
 if !exists('g:ctrlsf_leading_space')
     let g:ctrlsf_leading_space = 12
 endif
+
+if !exists('g:ctrlsf_regexp_mode')
+    let g:ctrlsf_regexp_mode = 0
+endif
 " }}}
 
 " Commands {{{1

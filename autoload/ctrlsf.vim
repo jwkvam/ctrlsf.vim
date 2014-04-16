@@ -19,13 +19,13 @@ let s:ACK_ARGLIST = {
     \ '-A' : { 'argt': 'space',  'argc': 1, 'alias': '--after-context' },
     \ '-B' : { 'argt': 'space',  'argc': 1, 'alias': '--before-context' },
     \ '-C' : { 'argt': 'space',  'argc': 1, 'alias': '--context' },
-    \ '-g' : { 'argt': 'space',  'argc': 1 },
     \ '-i' : { 'argt': 'none',   'argc': 0, 'alias': '--ignore-case' },
     \ '-m' : { 'argt': 'equals', 'argc': 1, 'alias': '--max-count' },
+    \ '-Q' : { 'argt': 'none',   'argc': 0, 'alias': '--literal' },
     \ '--ignore-case'    : { 'argt': 'none',   'argc': 0 },
+    \ '--literal'        : { 'argt': 'none',   'argc': 0 },
     \ '--match'          : { 'argt': 'space',  'argc': 1 },
     \ '--max-count'      : { 'argt': 'equals', 'argc': 1 },
-    \ '--pager'          : { 'argt': 'equals', 'argc': 1 },
     \ '--context'        : { 'argt': 'equals', 'argc': 1 },
     \ '--after-context'  : { 'argt': 'equals', 'argc': 1 },
     \ '--before-context' : { 'argt': 'equals', 'argc': 1 },
@@ -35,11 +35,11 @@ let s:AG_ARGLIST = {
     \ '-A' : { 'argt': 'space', 'argc': 1, 'alias': '--after' },
     \ '-B' : { 'argt': 'space', 'argc': 1, 'alias': '--before' },
     \ '-C' : { 'argt': 'space', 'argc': 1, 'alias': '--context' },
-    \ '-g' : { 'argt': 'space', 'argc': 1 },
     \ '-G' : { 'argt': 'space', 'argc': 1, 'alias': '--file-search-regex' },
     \ '-i' : { 'argt': 'none',  'argc': 0, 'alias': '--ignore-case' },
     \ '-m' : { 'argt': 'space', 'argc': 1, 'alias': '--max-count' },
     \ '-p' : { 'argt': 'space', 'argc': 1, 'alias': '--path-to-agignore' },
+    \ '-Q' : { 'argt': 'none',  'argc': 0, 'alias': '--literal' },
     \ '--after'       : { 'argt': 'space', 'argc': 1 },
     \ '--before'      : { 'argt': 'space', 'argc': 1 },
     \ '--context'     : { 'argt': 'space', 'argc': 1 },
@@ -48,8 +48,8 @@ let s:AG_ARGLIST = {
     \ '--ignore'      : { 'argt': 'space', 'argc': 1 },
     \ '--ignore-case' : { 'argt': 'none',  'argc': 0 },
     \ '--ignore-dir'  : { 'argt': 'space', 'argc': 1 },
+    \ '--literal'     : { 'argt': 'none',  'argc': 0 },
     \ '--max-count'   : { 'argt': 'space', 'argc': 1 },
-    \ '--pager'       : { 'argt': 'space', 'argc': 1 },
     \ '--file-search-regex' : { 'argt': 'space', 'argc': 1 },
     \ '--path-to-agignore'  : { 'argt': 'space', 'argc': 1 },
     \ }
@@ -508,8 +508,9 @@ func! s:HighlightMatch() abort
         return -2
     endif
 
+    let magic   = get(s:ackprg_options, 'literal') ? '\V' : '\v'
     let case    = get(s:ackprg_options, 'ignorecase') ? '\c' : ''
-    let pattern = printf('/\v%s%s/', case, escape(s:ackprg_options['pattern'], '/'))
+    let pattern = printf('/%s%s%s/', magic, case, escape(s:ackprg_options['pattern'], '/'))
     exec 'match ctrlsfMatch ' . pattern
 endf
 " }}}
@@ -611,10 +612,11 @@ func! s:ParseAckprgOptions(args) abort
         let s:ackprg_options['--match'] = [pattern]
     endif
 
-    " currently these are arguments we are interested
+    " currently these arguments are what we interested in
     let s:ackprg_options['path']       = path
     let s:ackprg_options['pattern']    = s:ackprg_options['--match'][0]
     let s:ackprg_options['ignorecase'] = has_key(s:ackprg_options, '--ignore-case') ? 1 : 0
+    let s:ackprg_options['literal']    = has_key(s:ackprg_options, '--literal') ? 1 : 0
     let s:ackprg_options['context']    = 0
     for opt in ['--after', '--before', '--after-context', '--before-context', '--context']
         if has_key(s:ackprg_options, opt)
@@ -798,6 +800,9 @@ endf
 func! s:BuildCommand(args) abort
     let prg      = g:ctrlsf_ackprg
     let u_args   = escape(a:args, '%#!')
+    if !g:ctrlsf_regexp_mode && !has_key(s:ackprg_options, '-e')
+        let u_args = escape(u_args, '{+')
+    endif
     let context  = s:ackprg_options['context'] ? '' : g:ctrlsf_context
     let prg_args = {
         \ 'ag'       : '--heading --group --nocolor --nobreak --column',
