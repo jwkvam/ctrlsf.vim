@@ -799,17 +799,31 @@ endf
 " s:BuildCommand() {{{2
 func! s:BuildCommand(args) abort
     let prg      = g:ctrlsf_ackprg
-    let u_args   = escape(a:args, '%#!')
-    if !g:ctrlsf_regexp_mode && !has_key(s:ackprg_options, '-e')
-        let u_args = escape(u_args, '{+')
-    endif
-    let context  = s:ackprg_options['context'] ? '' : g:ctrlsf_context
     let prg_args = {
         \ 'ag'       : '--heading --group --nocolor --nobreak --column',
         \ 'ack'      : '--heading --group --nocolor --nobreak',
         \ 'ack-grep' : '--heading --group --nocolor --nobreak',
-        \ }
-    return printf('%s %s %s %s', prg, prg_args[prg], context, u_args)
+        \ }[prg]
+    let conf_args = ''
+
+    " add default context setting
+    if !s:ackprg_options['context']
+        let conf_args .= ' '.g:ctrlsf_context
+    endif
+
+    " add ignored directories
+    if !empty(g:ctrlsf_ignore)
+        for ignore_dir in g:ctrlsf_ignore
+            let conf_args .= ' --ignore '.shellescape(ignore_dir)
+        endfor
+    endif
+
+    let custom_args = escape(a:args, '%#!')
+    if !g:ctrlsf_regexp_mode && !has_key(s:ackprg_options, '-e')
+        let custom_args = escape(custom_args, '{+')
+    endif
+
+    return printf('%s %s %s %s', prg, prg_args, conf_args, custom_args)
 endf
 " }}}
 

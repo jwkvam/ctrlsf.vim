@@ -65,6 +65,10 @@ endif
 if !exists('g:ctrlsf_regexp_mode')
     let g:ctrlsf_regexp_mode = 0
 endif
+
+if !exists('g:ctrlsf_ignore')
+    let g:ctrlsf_ignore = []
+endif
 " }}}
 
 " Commands {{{1
