@@ -7,10 +7,10 @@
 " ============================================================================
 
 " Loading {{{1
-if !exists('g:ctrlsf_debug') && exists('g:ctrlsf_loaded')
+if !exists('g:ctrlsf_debug') && exists('g:loaded_ctrlsf')
     finish
 endif
-let g:ctrlsf_loaded = 1
+let g:loaded_ctrlsf = 1
 " }}}
 
 " Utils {{{1
