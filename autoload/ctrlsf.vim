@@ -837,7 +837,7 @@ func! s:BuildCommand(args) abort
         \ 'ack'      : '--heading --group --nocolor --nobreak',
         \ 'ack-grep' : '--heading --group --nocolor --nobreak',
         \ }
-    return printf('%s %s %s %s', prg, prg_args[prg], context, u_args)
+    return printf('%s %s %s "%s"', prg, prg_args[prg], context, u_args)
 endf
 " }}}
 
