@@ -830,7 +830,7 @@ endf
 " s:BuildCommand() {{{2
 func! s:BuildCommand(args) abort
     let prg      = g:ctrlsf_ackprg
-    let u_args   = escape(a:args, '%#!')
+    let u_args   = escape(a:args, '()%#!')
     let context  = s:ackprg_options['context'] ? '' : g:ctrlsf_context
     let prg_args = {
         \ 'ag'       : '--heading --group --nocolor --nobreak --column',
